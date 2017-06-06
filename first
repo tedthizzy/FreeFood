@@ -1,0 +1,247 @@
+# in order to run these programs open terminal and type the following, followed by enter:
+#ls
+#cd pycharmprojects
+#ls
+#cd (whatever your folder is called)
+#ls
+#python (whatever your file is called)
+
+
+
+
+# this is my first project and this is how you comment
+print("hello world")
+
+# while loop DO NOT CREATE AN INFINITE WHILE LOOP -> hard to track down
+
+count = 0
+endCount = 10
+
+while(count < endCount):
+    count +=1
+    print(count)
+
+flag = True
+count =0
+
+while(flag is True):
+    print("this is a sentence")
+    if(count ==5):
+        flag = False
+    count +=1
+
+count = 0
+endCount = 10
+
+import random
+
+randomNumber = random.randint(1,endCount)
+
+guess = -1
+while(guess != randomNumber and count < endCount):
+    guess = int(input("guess a number, any number!"))
+    count +=1
+
+if(guess == randomNumber):
+    print("you got it!", randomNumber)
+
+else:
+    print("you ran outa guesses! Number was:", randomNumber)
+
+# two was to get random numbers: uses computer clock to generate random number
+# monte carlo simulations or encryption should use logic from human interaction (mouse movement)
+
+count = 0
+endCount = 100
+
+while(count < endCount):
+    count +=1
+
+    if(count % 2 != 0):
+        continue    # go back to the top of the while loop
+    elif(count >= 10):
+        break       # stop loop completely
+    elif(count == 4):
+        pass        # do nothing
+    else:
+        print(count)
+print("while loop is done!")
+
+# FOR LOOP - preferred looping mechanism - does not behave same as most other languages (no indexer), similar to pearl
+# iterating or looping using values
+
+planetList = ["Mercury","Venus","Earth","Mars","(ceres)","Jupiter","Saturn","(titan)","Uranus","Neptune","(pluto)","X"]
+for planet in planetList:
+    print(planet)
+print()
+print("that's all folks")
+
+# loop by index
+
+listLength = len(planetList)
+
+for index in range(listLength):
+    print(index,planetList[index])
+
+for index in range(len(planetList)):    # more common way of writing it (condensed)
+    print(index,planetList[index])
+
+# reversed()
+
+for planet in reversed(planetList):
+    print(planet)
+
+# enumerate -> returns index and value [(index1,value1),(index2,value2)]
+
+for index, planet in enumerate(planetList,1):
+    print("{} {}".format(index,planet))
+
+# sorted()  -> MISSED NOTES: ,key = #
+
+for planet in sorted(planetList):
+    print(planet)
+
+# zip()
+
+planetWidth = len(max(planetList, key = len))
+periodList = [88,235,365,687,750]
+periodWidth = len(str(max(periodList)))
+for planet, period in zip(planetList, periodList):
+    #MISSED NOTES
+
+# nested for loops by indenting consecutive for loops -> see calandar example
+
+#print(str("{:^3}"*daysPerWeek).format(*"SMTWTFS"))
+
+# asterist dissasembles string or list bc format likes .format(1,2,3,4) but NOT .format([1,2,3,4])
+# x = [1,2,3,4,5]
+# *x = 1,2,3,4,5
+
+# see what continue, break, pass
+
+########## looping over dictionaries
+
+planetInfo = {'Mercury' : 88        # missed something ?!?!?! FIX THIS
+              'Venus' : 225
+              'Earth' : 365
+              'Mars' : 687
+              'Jupiter' : 4333
+              'Saturn' : 10756
+              'Uranus' : 30687
+              'Neptune' : 60190}
+
+print(planetInfo) # does not always print into the same order
+
+for planet in planetInfo:
+    print("{:7} orbits every {:5} days".format(planet,planetInfo[planet]))
+
+for planet, period in planetInfo.items():
+    print("{:7} orbits every {:5} days".format(planet,period))
+
+########### list comprehension -> compact, generally faster (25%), more limited for loop
+
+numberList = []
+for num in range(10):
+    # append the number to the list (normal)
+    numberList.append(num)
+print(numberList)
+
+numberList = [num for num in range(10)] # list comprehension method
+
+print(numberList)
+
+# add an if conditional SUPER HANDY IN FOR LOOPS
+
+numberList = [number * 3 for number in range(10) if(number % 2 ==0)]
+# when if is true add value into list when false do not do that (gota be even)
+print("numberList =",numberList)
+
+# use in for loops
+
+for number in [num for num in numberList if(num < 10)]:
+    print(number)
+
+######## dictionary comprehension
+
+namesList = ["Fred","Barney", "Wilma", "Betty"]
+
+namesDict = {name : len(name) for name in namesList if(len(name) > 4)}
+
+print(namesDict)
+
+######## tuple comprehension
+
+numberTuple = {num for num in range(10)}
+
+print("numberTuple ==", numberTuple)
+
+numberTuple = tuple(numberTuple)
+
+print("numberTuple ==", numberTuple)
+
+########### importing -> using files in C++ or inputing in Pearl (bring in another file)
+
+import math # if you create custom file write it in here (without the .py)
+
+cosAnswer = math.cos(math.pi)
+sinAnswer = math.sin(math.pi)
+
+print("math.cos(math.pi)==",cosAnswer)
+print("math.sin(math.pi)==",sinAnswer)
+
+###### specific methods
+
+from math import cos, pi
+
+cosAnswer = cos(pi)
+
+print("cos(pi)==", cosAnswer)
+
+####### Everything
+
+from math import *
+
+sinAnswer = sin(pi / 2)
+
+print("sinAnswer = sin(pi / 2)=={:+.lf}".format(sinAnswer))
+
+import math as mathematics
+from math import sin as sine
+
+######## seperating import code from runtime code
+
+def main():
+    print("your code goes here")
+
+#if(__name__ == *  main  *):        -> forces script to only run from the command line
+#    main()
+
+######## Python modules is a python file
+
+#import my_own_module
+
+###### Packages is a collection of python files
+
+##### creating a new link after import
+#todayDateAndTime = my_own_module.today # can use both of these names to call it
+
+#!ls -l pkg # SHELL COMMAND
+#!cat pkg/dave.py    # python packages are directories that contain files __init__.py allows python to recognize directory as a package
+
+
+# use import sys then sys.argv to grab input parameters from the command line
+
+# 'r' is read for file
+
+# read lines reads lines file
+
+#re. search searches for regular expressions
+
+# datetime
+
+#import sys
+#import re
+#import os
+#import datetime
+
+

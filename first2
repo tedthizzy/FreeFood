@@ -1,0 +1,380 @@
+'''
+
+block quote unless written directly under a function header
+if under func header then help on the func will result in this info help(function)
+you can have constants in the function, you can override them if you get the order right unless you say keyword=
+
+escape characters: \n -> "this is a string and then an enter. \n"
+
+'''
+
+import itertools
+# import sys
+# list: sys.argv
+
+from argparse import ArgumentParser, RawTextHelpFormatter
+
+letterValues = {"A" : 1,
+                "B" : 2,
+                "C" : 3}
+
+def findWords(letters,dictionary):
+    wordList =[]
+    for length in range(2, len(letters) +1):
+        letterPerms[''.join(element) for element in itertools.permutations(letters,length)]
+        currentList = list(set(dictionary.get()))
+
+# example dictionary { 2: ["aa","bb"], 3: ["aaa","bbb"]}
+
+def main():
+
+    parser = ArgumentParser(description=description, formatter_class=RawTextHelpFormatter)
+
+    parser.add_argument("letters",help="letters in hand")
+    parser.add_argument("-d","--dictionary",dest="dictionary",help="scrapple dictionary file",default='dictionary.txt')
+    parser.add_argument("-s","--sort-by",dest="sortBy",help="Sort word list", choices=["length, "value"], )
+
+#============================================================================#  SCRABBLE GAME
+
+def increment(x):
+    x+=1
+    return(x)
+
+# the x inputed into this function != to the x within the function
+# within the function is will still see variables of a higher scope
+# cannot modify inside unless its a global variable
+
+L = [0,1,2,3]
+def func(theList):      # alternatively, func(L.copy)
+    m = L.copy()
+# bad way    theList[0] =5 -> func(L)
+
+def binSearch(inList, term): # binary search
+    bIndex = 0
+    eIndex = len(inList)
+
+    for _ in range(len(inList)):
+        index = (eIndex + bIndex) // 2
+
+        if (term > inList[index]):
+            bIndex = index
+        elif(term < inList[index]):
+            eIndex = index
+        else:
+            return(index)
+
+    return(None)
+
+numList = [1,2,3]
+
+# if you try to look for the wrong data type you will get a type error
+print(binSearch(numList,"LASP"))
+
+try:
+    bIndex = 0
+    eIndex = len(inList)
+
+except TypeError as error:
+    print("Binary Search Error:", error)
+
+except Exception as error:      # will catch any old error
+    print(error)
+
+letterList = ['a','b','c']
+
+# ** and exp() -> exponent
+
+# Lambda function are one liners: the following are equivalent
+# all lambda functions can be rewritten as normal functions defined prior to use
+
+def funcDef(x):
+    return x+5
+
+funcLambda = lambda x: x+5
+
+planetInfo = {'Mercury' : 88        # missed something ?!?!?! FIX THIS
+              'Venus' : 225
+              'Earth' : 365
+              'Mars' : 687
+              'Jupiter' : 4333
+              'Saturn' : 10756
+              'Uranus' : 30687
+              'Neptune' : 60190}
+
+
+for planet in sorted(planetInfo, key = lambda planet: planetInfo[planet]):
+    print("{:8} {}".format(planet,planetInfo[planet]))
+
+for planet in sorted(planetInfo, key=lambda planet: planetInfo[planet] % 2 == 0):
+    print("{:8} {}".format(planet, planetInfo[planet]))
+
+# grubgrab, reads text file to string, use "with" because otherwise the file handle might remain open and crash
+with open("american-english-short",'r') as FILE:
+    text = FILE.read()
+
+print(text)
+print("type(text) ==", type(text))
+
+# grubgrab, reads text file converts each line to an element in list
+with open("american-english-short",'r') as FILE:
+    text = FILE.readlines()
+
+for line in lineList:
+    print(line.strip()) # removed white space from the begining and the end
+    lineList = list(map(str.strip, lineList))   # extra question
+
+with open('binary.dat', 'rb') as FILE:
+    data = FILE.read()
+
+for byte in data:
+    print("Dec: {:2}  Hex: 0x{:02X}  Bin: {:04b}".format(byte, byte, byte))
+
+# read on the fly so it only holds (1) byte of data in memory at a time
+with open('binary.dat', 'rb') as FILE:
+    data = FILE.read(1)
+
+    while byte: # still have bytes to read
+        print("Dec: {:2}  Hex: 0x{:02X}  Bin: {:04b}".format(byte, byte, byte))
+        byte = FILE.read(1)
+
+data = bytes([0x10,0x20]) # list of hexadecimal
+
+for byte in data
+    with open("write_binary.dat",'wb') as FILE:
+        FILE.write(data)
+
+# terminal     !xxd - 1 write_binary.dat | cut -c 11-40
+
+with open("write_binary.dat",'r+b') as FILE:
+    FILE.seek(4)
+    FILE.write(bytes([0x59]))
+
+# deep copy vs shallow copy
+
+L = [[1,2,3],2,3]
+L.copy() # only will copy as much as necessary to make it semmi unique (shallow copy)
+# result is [[1,2,3],2,3] where the ,2,3 are unique but [1,2,3] are the SAME object -> if modified both change
+# outer list is unique, deep copy is a package you have to import, and will dedicate a new hunk of memory for everything
+# beware copying a button or something where itll grab all the memory and potentially create an infinite loop
+
+# numpy is a package not available in regular python
+# lists can be a dynamic data container but are slow when more than 1000 data points (10-100x slower than arrays)
+# numpy arrays data types can be converted. They are immutable (cannot change size after creation) at least not quickly
+
+import numpy as np
+
+array = np.array([0,1,2,3,4.0]) # changes all values to a float
+array = np.array([0,1,2,3,4.0], dtype = int) # to force a particular data type (trunkates)
+
+arrayNumber = np.zeros(5) # creates an array of 5 0's
+
+array1D = np.arange(1,9) # results in array from 1-8
+
+array1Dstep = np.arange(1,9,0.5) # cannot do this with a list
+
+arrayRandom = np.random.random((5)) # random between 0 and 1
+
+array2D = np.array([(1,2,3),(4,5,6)])
+
+array2Dreshape = array2D.reshape(2,4)
+
+array2Drandom = array2D.reshape(2,4)
+
+array2Drandom = np.random.random((2,3,4))
+
+arrayPi = np.linspace(0,2 * np.pi,10) # creates 10 numbers with number that are equally spaced
+
+array # .ndim .shape .size .dtype   # check this
+
+value = array2D[0][3]
+
+value = array[0,3]
+
+# you can do things to an array by doing arrayAddDigit, arraySubDigit, arrayMulDigit, arrayDivDigit
+# when doing this to lists its does weird lsity stuff instead of the math you wanted
+# you can also do matrix math
+
+arrayDotarray = arrayB.dot(arrayA)   # dot product
+array2D.sum(axis=0)
+array2D.min(axis=1)
+array2D.max(axis=1)
+
+arrayTime = np.linspace(1,10,4) # array is inclusive here 1-10
+arrayDist = np.distance(arrayTime)
+
+array2D.arrange(10).reshape(2,3,4)
+
+slice1D = array1D[0:2] #not including 2
+
+z = np.zeros((2,3,4))
+ones = np.ones_like(z)  # creates a new array (all of ones) that is the same size as z
+
+print(array1D[0:4:2])
+print(array1D[::2])
+print(array1D[::-1])
+print(array1D[::-2])   # every other number in backwards order
+
+sliceCopy1D = array1D[0:2].copy()
+
+def f(x,y):
+    return 10*x+y
+
+arrayFunc = np.fromfunction(f,(5,4),dtype = int)
+
+array2ndCol = arrayFunc[0:5,1]
+
+arrray2ndCol = arrayFunc[:,1]   # could also do :5 on either row or column
+
+arrayA = np.array[1,2,3,4]
+
+arrayBool = np.array([False,True,False,False])
+
+print(arrayA[arrayBool]) # returns only values where arrayBool is true
+
+arrayComp = arrayA > 2 # returns boolean array where comparison is met
+
+# .average,.transpose(), .T, argmax(), argmin() -> index where the first time the max/min found
+
+arrayJ = np.random.randint(0,10,10)
+
+arrayToSort = np.random.randint(10,20,5)
+arrayToSortNew = np.sort(arrayToSort)
+arrayInplaceSort = arrayToSort.copy()
+arrayInplaceSort.sort()
+
+##### REGULAR EXPRESSIONS ######### (generic searching -> quite slow, do strings first)
+
+import re
+
+text = "2016-01-02 <INFO> : message"
+
+reObj = re.search("^(\d+)-(\d+)\s+(\d+):(\d+):(\d+)\s+<(\w+)>\s+(.+)$",text)
+# + means one or more, () means remember whatever digit you find, - means another digit, \s is space, \w is character, <> GE, . is anything, $ is end of text
+
+reObjNotFound = re.search("WARNING",text)
+
+if(re.Obj is not None):
+    print("Year: ", reObj.group(1))
+
+
+reObj = re.search("<(info)>",text, re.I) # I stands for ignore, in this case- case sensitivity
+
+confText="1.2.3.456"
+confTextLocal = re.sub("\d+\.","words",confText) # if no substitution is done, returns original text
+
+text = "number: 3.55"
+numberList = re.findall("\d+",text)
+
+text = "these are words: and these are more. Plus a sentence: here"
+splitText = re.split("\s*\w+:\s*", text)
+splitText = list(filter(None,splitText)) # filter allows you to remove items from a text
+
+logText="this is 1 line of text"
+
+regEx = re.compile("^(\d+)$")   # good to do because reg ex has to compile every time
+
+for line in logText.splitlines():
+    reObj = re.search(regEx, line)
+
+    if(reObj is not None):
+        print(reObj.group(1))
+    endif
+endfor
+
+
+####### MATPLOTLIB ######### pyqtgraph for livestreamed plotting
+
+import numpy as np
+
+'matplotlib inline
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+inlineRc = dict(mpl.rcParams)
+
+x = np.linspace(0,2*np.pi,100)
+y=np.sin(x)
+plt.plot(x,y)
+nanGaps = np.ones(5)*np.nan
+y[5:10] = nanGaps
+y[50:55] = nanGaps
+
+plt.plot(x,y)
+plt.xlabel(r*$XS", fontsize=14)
+plt.ylabel=(r'$y=sin(x)', fontsize=14)
+plt.title("Dataset wiith Gaps")
+plt.axis[4,0,30]
+plt.xlabel("This is teh title")
+#plt.title=
+#plot.legend=
+t = np.arrange(0,5,0.2)
+def distance(t, a = 9.8)
+def velocity(t, a=0.8)
+def acceleration(t,a=9.8)
+
+lines = plt.plot(t, distance(t))
+plt.setp(lines[0],'linewidth',5)
+plt.figure(0) #this is an identifier
+plt.subplot(211)    # rows # columns # index (starting with 1)
+plt.plot(t1,functionA(t1),'bo',t2,functionA(t2),'k')
+plt.title("function")
+plt.sumplot(212)
+plt.plot(t2,functionB(t2),'r--')
+plt.title("functionB")
+plt.tight_layout()
+
+mu = 100
+sigma = 15
+size =10000
+
+data = np.random.normal(loc = mu, scale = sigma, size = size)
+
+n, bins, patches = plt.hist(data,50,normed=True, facecolor='g',alpha=0.75)
+
+plt.text(60, 0.025, r'$\mu=100,\ \sigma=15$')
+plt.grid(True)
+
+import matplotlib.image as mpimg
+
+image = mpimg.imread("hubble.png")
+print(type(image))
+print(image.shape)
+plt.imshow(image)
+
+plt.subplt(131)
+
+plt.imshow(image[:, :, 0],cmap='Reds')
+plt.colorbar()
+plt.savefig('hubble_accent.png')
+
+dt = 0.0005
+t = np.arrange(0.0, 20.0, dt)
+s1 = np.sin(2*np.pi*100*t)
+s2 = np.sin(2*np.pi*100*t)
+
+mask = np.where(np.logical_and(t > 10, t < 12), 1.0, 0.0)
+
+s2 = s2 * mask
+
+nse = 0.01*np.random.random(size=10)
+
+plt.plot(t,z)
+plt.subplot(212,sharex=ax1)
+
+Pxx, freqs, bins, im = plt.spec#stuff
+
+plt.errorbars(x,y3,yerr=0.2,capsize=3,uplims=upperLimits, lolims=lowerLimits)
+_ = plt.xlim(-1,10)
+
+ax.set_title
+flg.suptitle    # goes across all the plots and applies to figure
+
+# scatter plots !
+
+brightPoints = np.where(redImage > redImage.max() * 0.90)
+
+color = (1.0, 0.0, 0.0)
+
+with plt.xkcd():
+
