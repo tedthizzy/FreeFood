@@ -46,16 +46,16 @@ def process_mailbox(M):
         # Body (Payload) can be returned from get_payload as either a list of size 2 (1 = plain, 2 = html version(I THINK)) or a string
         try:
             body_plain_text = msg.get_payload(0)
-            print(str(body_plain_text))
+            body = (str(body_plain_text))
         except:
             try:
-                body_plain_text = msg.get_payload()
+                body = msg.get_payload()
             except:
                 print("IDK")
                 continue
-
+        sender = msg.get_all("From")
         subject = str(hdr)
-        print('Message %s: %s' % (num, subject))
+        # print('Message %s: %s' % (num, subject))
         # print('Raw Date:', msg['Date'])
 
         # Now convert to local date-time
@@ -63,39 +63,38 @@ def process_mailbox(M):
         if date_tuple:
             local_date = datetime.datetime.fromtimestamp(
                 email.utils.mktime_tz(date_tuple))
-            print ("Local Date:", \
-                local_date.strftime("%a, %d %b %Y %H:%M:%S"))
+            # print ("Local Date:",local_date.strftime("%a, %d %b %Y %H:%M:%S"))
 
         # hdr_bdy = email.header.make_header(email.header.decode_header(msg['Body']))
     #    full_email = email.message_from_string(data[0][1]) # raw_email)
-        body = ""
 
-        if msg.is_multipart():
-            for part in msg.walk():
-                ctype = part.get_content_type()
-                cdispo = str(part.get('Content-Disposition'))
-
-                # skip any text/plain (txt) attachments
-                if ctype == 'text/plain' and 'attachment' not in cdispo:
-                    body = part.get_payload(decode=True)  # decode
-                    break
-         #   body = get_text(msg.get_payload(0))
-        # not multipart - i.e. plain text, no attachments, keeping fingers crossed
-        else:
-            body = msg.get_payload(None, True) # body = bdy.get_payload(decode=True)
+        # if msg.is_multipart():
+        #     for part in msg.walk():
+        #         ctype = part.get_content_type()
+        #         cdispo = str(part.get('Content-Disposition'))
+        #
+        #         # skip any text/plain (txt) attachments
+        #         if ctype == 'text/plain' and 'attachment' not in cdispo:
+        #             body = part.get_payload(decode=True)  # decode
+        #             break
+        #  #   body = get_text(msg.get_payload(0))
+        # # not multipart - i.e. plain text, no attachments, keeping fingers crossed
+        # else:
+        #     body = msg.get_payload(None, True) # body = bdy.get_payload(decode=True)
 
 
             ########################## FIND KEYWORDS ###############################
 
 
-        if "food" in str(body).lower():
-            if "public" in str(body).lower():
-                print(body)
-                time.sleep(4)
+        if "free food" in str(body).lower():
+            print('Message %s: %s' % (num, subject))
+            print("Local Date:", local_date.strftime("%a, %d %b %Y %H:%M:%S"))
+            print("Sender = " + sender[0].split("<")[1][:-1])
+            print(body)
 
-        i = i+1
-        if i == 10:
-            break
+        # i = i+1
+        # if i == 10:
+        #     break
 
 
 
