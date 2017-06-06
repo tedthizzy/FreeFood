@@ -5,7 +5,13 @@ import email
 import email.header
 import datetime
 import time
+from tkinter import *
+from tkinter import messagebox
+import tkinter.ttk as ttk
+from tkinter.scrolledtext import ScrolledText
 from configparser import ConfigParser
+
+
 
 # from pygeocoder import Geocoder
 # import pandas as pd
@@ -97,28 +103,114 @@ def process_mailbox(M):
         #     break
 
 
-
-
 M = imaplib.IMAP4_SSL('imap.gmail.com')
 
-try:
-    rv, data = M.login(EMAIL_ACCOUNT, PASSWORD)
-    # rv, data = M.login(EMAIL_ACCOUNT, getpass.getpass())
 
-except imaplib.IMAP4.error:
-   print ("LOGIN FAILED!!! ")
-   sys.exit(1)
+def login(M):
+    try:
+        rv, data = M.login(EMAIL_ACCOUNT, PASSWORD)
+        # rv, data = M.login(EMAIL_ACCOUNT, getpass.getpass())
+    except imaplib.IMAP4.error:
+       print ("LOGIN FAILED!!! ")
+       sys.exit(1)
+    return rv, data
 
-print(rv, data)
-rv, mailboxes = M.list()
-if rv == 'OK':
-    print("Mailboxes:")
-    print(mailboxes)
-rv, data = M.select(EMAIL_FOLDER)
-if rv == 'OK':
-    print("Processing mailbox...\n")
-    process_mailbox(M)
-    M.close()
-else:
-    print("ERROR: Unable to open mailbox ", rv)
-M.logout()
+def start_process():
+    rv, data = login(M)
+    print(rv, data)
+    rv, mailboxes = M.list()
+    if rv == 'OK':
+        print("Mailboxes:")
+        print(mailboxes)
+    rv, data = M.select(EMAIL_FOLDER)
+    if rv == 'OK':
+        print("Processing mailbox...\n")
+        process_mailbox(M)
+        M.close()
+    else:
+        print("ERROR: Unable to open mailbox ", rv)
+    M.logout()
+
+def doNothing():
+    return
+
+root = Tk()
+root.title("Free Food")
+menubar = Menu(root)
+filemenu = Menu(menubar, tearoff=0)
+filemenu.add_command(label="Exit", command=root.quit)
+menubar.add_cascade(label="File", menu=filemenu)
+root.config(menu=menubar)
+
+leftBox = Frame(root, borderwidth=0)
+rightBox = Frame(root, borderwidth=5)
+
+leftBox.pack(side=LEFT)
+rightBox.pack(side=RIGHT)
+#Creation of Boxes
+# Left
+subjectLabel = Label(leftBox, text='Subject')
+subjectEntry = Entry(leftBox, width=100)
+
+fromLabel = Label(leftBox, text='From')
+fromEntry = Entry(leftBox, width=100)
+
+timeLabel = Label(leftBox, text='Time')
+timeEntry = Entry(leftBox, width=100)
+
+bodyLabel = Label(leftBox, text='Body')
+bodyScrolledText = ScrolledText(leftBox, height=30, width=100, undo=True)
+# Right
+parseButton = Button(rightBox, text="Parse", width=25, command=lambda: start_process())
+
+titleLabel = Label(rightBox, text='Title')
+titleEntry = Entry(rightBox, width=50)
+
+groupLabel = Label(rightBox, text='Group')
+groupEntry = Entry(rightBox, width=50)
+
+locationLabel = Label(rightBox, text='Location')
+locationEntry = Entry(rightBox, width=50)
+
+descriptionLabel = Label(rightBox, text='Subject')
+descriptionScrolledText = ScrolledText(rightBox, height=20, width=50, undo=True)
+
+previousButton = Button(rightBox, text="<Prev", width=25, command=lambda: doNothing())
+confirmButton = Button(rightBox, text="Confirm", width=25,background="red",  command=lambda: doNothing())
+nextButton = Button(rightBox, text="Next>", width=25,  command=lambda: doNothing())
+
+#Adding boxes to grid
+# Left
+subjectLabel.grid(row=9)
+subjectEntry.grid(row=9, column=1, padx=10, pady=2)
+
+fromLabel.grid(row=10)
+fromEntry.grid(row=10, column=1, padx=10, pady=2)
+
+timeLabel.grid(row=11)
+timeEntry.grid(row=11, column=1, padx=10, pady=2)
+
+bodyLabel.grid(row=12)
+bodyScrolledText.grid(row=12, column=1, padx=10, pady=10)
+
+# Right
+
+parseButton.grid(column=1, row = 7, pady = 2)
+
+titleLabel.grid(row=9)
+titleEntry.grid(row=9, column=1, padx=10, pady=2)
+
+groupLabel.grid(row=10)
+groupEntry.grid(row=10, column=1, padx=10, pady=2)
+
+locationLabel.grid(row=11)
+locationEntry.grid(row=11, column=1, padx=10, pady=2)
+
+descriptionLabel.grid(row=12)
+descriptionScrolledText.grid(row=12, column=1, padx=10, pady=10)
+
+previousButton.grid(column=1, row = 20, pady = 10, sticky=W)
+confirmButton.grid(column=1, row = 21, pady = 10)
+nextButton.grid(column=1, row = 20, pady = 10, sticky=E)
+
+root.mainloop()
