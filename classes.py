@@ -11,5 +11,6 @@ class parsedEmail():
         self.group = ""
         self.location = ""
         self.date = ""
-        self.time = ""
+        # self.time = ""
+        # Need to find other name
         self.details = ""

@@ -27,7 +27,7 @@ PASSWORD = config['Main']['Password']
 # Use 'INBOX' to read inbox.  Note that whatever folder is specified,
 # after successfully running this script all emails in that folder
 # will be marked as read.
-EMAIL_FOLDER = "INBOX"
+EMAIL_FOLDER = "Freefood"
 
 
 def process_mailbox(M):
@@ -96,23 +96,38 @@ def process_mailbox(M):
 
 
         if "free food" in str(body).lower():
-            uid = msg.get_all('Message-ID')
+            senderName = ""
+            uid = msg.get_all('Message-ID')[0]
+            uid = uid.replace("<","")
+            uid = uid.replace(">", "")
+            # print(uid)
             time = local_date.strftime("%a, %d %b %Y %H:%M:%S")
             senderEmail =  sender[0].split("<")[1][:-1]
             try:
-                senderName = sender[0].split('"')[1]
+                t, d = M.fetch(uid, '(X-GM-LABELS)')
+                print(t)
+                print(d)
             except:
                 doNothing()
+            try:
+                senderName = sender[0].split('"')[1]
+            except:
+                try:
+                    senderName = sender[0].split("<")[0][:-1]
+                except:
+                    pass
+
             # print('Message %s: %s' % (num, subject))
             # print("Local Date:", local_date.strftime("%a, %d %b %Y %H:%M:%S"))
             # print("Sender = " + sender)
             # print(body)
+            print(senderName)
             emailObject = parsedEmail(uid, subject, senderEmail, senderName, time, body)
             emailArray.append(emailObject)
 
 
         i = i+1
-        if i == 500:
+        if i == 200:
             print("Parsing Done")
             break
 
@@ -154,17 +169,22 @@ def initalEmailDisplay():
 def fillEmailFields():
     emailPosition = int(emailLabel.cget("text").split('/')[0]) - 1
     currentEmail = emailArray[emailPosition]
+    clearEmailFields()
+    clearEventFields()
+    subjectEntry.insert(0, currentEmail.subject)
+    fromEntry.insert(0, currentEmail.sender)
+    groupEntry.insert(0, currentEmail.senderName)
+    uidEntry.insert(0, currentEmail.uid)
+    if currentEmail.time != None:
+        timeEmailEntry.insert(0, currentEmail.time)
+    bodyScrolledText.insert(1.0, currentEmail.body)
+
+def clearEmailFields():
     subjectEntry.delete(0, END)
     fromEntry.delete(0, END)
     timeEmailEntry.delete(0, END)
     bodyScrolledText.delete(1.0, END)
-    groupEntry.delete(0, END)
-    subjectEntry.insert(0, currentEmail.subject)
-    fromEntry.insert(0, currentEmail.sender)
-    groupEntry.insert(0, currentEmail.senderName)
-    if currentEmail.time != None:
-        timeEmailEntry.insert(0, currentEmail.time)
-    bodyScrolledText.insert(1.0, currentEmail.body)
+    uidEntry.delete(0, END)
 
 def nextEmail(number):
     emailLabelText = emailLabel.cget("text").split('/')
@@ -183,18 +203,44 @@ def confirmEmail():
     location = locationEntry.get()
     date = dateEntry.get()
     time = timeEntry.get()
+    uid = uidEntry.get()
     details = detailsScrolledText.get(1.0, END)
-    sendConfirmedEventsToFirebase(title, group, location, date, time, details)
+    sendConfirmedEventsToFirebase(uid, title, group, location, date, time, details)
+    deleteEmailFromArray()
 
-def sendConfirmedEventsToFirebase(title, group, location, date, time, details):
+def deleteEmailFromArray():
+    emailLabelText = emailLabel.cget("text").split('/')
+    totalEmails = int(emailLabelText[1])
+    currentEmailPosition = int(emailLabelText[0]) - 1
+    if totalEmails == 1 or totalEmails == 0:
+        clearEventFields()
+        clearEmailFields()
+        return
+    else:
+        emailArray.remove(emailArray[currentEmailPosition])
+        totalEmails = totalEmails - 1
+        nextEmailPosition = (currentEmailPosition + 1) % totalEmails
+        emailLabel.config(text=str(nextEmailPosition + 1) + '/' + str(totalEmails))
+        fillEmailFields()
+        return
+
+def clearEventFields():
+    titleEntry.delete(0, END)
+    groupEntry.delete(0, END)
+    locationEntry.delete(0, END)
+    detailsScrolledText.delete(1.0, END)
+    dateEntry.delete(0, END)
+    timeEntry.delete(0, END)
+
+def sendConfirmedEventsToFirebase(uid, title, group, location, date, time, details):
     config = ConfigParser()
     config.read("config.ini")
     configuration = {"apiKey" : config['Firebase']['ApiKey'], "authDomain" : config['Firebase']['AuthDomain'],"databaseURL" :
         config['Firebase']['DatabaseURL'], "storageBucket" : config['Firebase']['StorageBucket'], "serviceAccount" : config['Firebase']['ServiceAccount']}
     firebase = pyrebase.initialize_app(configuration)
     db = firebase.database()
-    data = {"xBody": details, "xFrom": group, "xLoCoord1" : "", "xLoCoord2" : "", "xLocation" : location, "xSubject" : title, "xDate":date, "xTime":time}
-    db.push(data)
+    data = {"xUid": uid,"xDetails": details, "xGroup": group, "xLoCoord1" : "", "xLoCoord2" : "", "xLocation" : location, "xTitle" : title, "xDate":date, "xTime":time}
+    db.child("events").push(data)
 
     # firebase = pyrebase.initialize_app(configuration)
     # auth = firebase.auth()
@@ -226,6 +272,9 @@ rightBox.pack(side=RIGHT)
 
 #Creation of ui elements
 # Left
+uidLabel = Label(leftBox, text='UID')
+uidEntry = Entry(leftBox, width=100)
+
 subjectLabel = Label(leftBox, text='Subject')
 subjectEntry = Entry(leftBox, width=100)
 
@@ -265,6 +314,11 @@ nextButton = Button(rightBox, text="Next>", width=25,  command=lambda: nextEmail
 
 #Adding ui elements
 # Left
+
+uidLabel.grid(row=8)
+uidEntry.grid(row=8, column=1, padx=10, pady=2)
+
+
 subjectLabel.grid(row=9)
 subjectEntry.grid(row=9, column=1, padx=10, pady=2)
 
