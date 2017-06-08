@@ -11,6 +11,8 @@ import tkinter.ttk as ttk
 from tkinter.scrolledtext import ScrolledText
 from configparser import ConfigParser
 from classes import *
+import pyrebase
+
 
 # from pygeocoder import Geocoder
 # import pandas as pd
@@ -94,18 +96,23 @@ def process_mailbox(M):
 
 
         if "free food" in str(body).lower():
+            uid = msg.get_all('Message-ID')
             time = local_date.strftime("%a, %d %b %Y %H:%M:%S")
-            sender =  sender[0].split("<")[1][:-1]
+            senderEmail =  sender[0].split("<")[1][:-1]
+            try:
+                senderName = sender[0].split('"')[1]
+            except:
+                doNothing()
             # print('Message %s: %s' % (num, subject))
             # print("Local Date:", local_date.strftime("%a, %d %b %Y %H:%M:%S"))
             # print("Sender = " + sender)
             # print(body)
-            emailObject = parsedEmail(subject, sender, time, body)
+            emailObject = parsedEmail(uid, subject, senderEmail, senderName, time, body)
             emailArray.append(emailObject)
 
 
         i = i+1
-        if i == 200:
+        if i == 500:
             print("Parsing Done")
             break
 
@@ -149,11 +156,14 @@ def fillEmailFields():
     currentEmail = emailArray[emailPosition]
     subjectEntry.delete(0, END)
     fromEntry.delete(0, END)
-    timeEntry.delete(0, END)
+    timeEmailEntry.delete(0, END)
     bodyScrolledText.delete(1.0, END)
+    groupEntry.delete(0, END)
     subjectEntry.insert(0, currentEmail.subject)
     fromEntry.insert(0, currentEmail.sender)
-    timeEntry.insert(0, currentEmail.time)
+    groupEntry.insert(0, currentEmail.senderName)
+    if currentEmail.time != None:
+        timeEmailEntry.insert(0, currentEmail.time)
     bodyScrolledText.insert(1.0, currentEmail.body)
 
 def nextEmail(number):
@@ -166,6 +176,35 @@ def nextEmail(number):
         nextEmailPosition = (currentEmailPosition + number) % totalEmails
         emailLabel.config(text=str(nextEmailPosition + 1) + '/' + str(totalEmails))
         fillEmailFields()
+
+def confirmEmail():
+    title = titleEntry.get()
+    group = groupEntry.get()
+    location = locationEntry.get()
+    date = dateEntry.get()
+    time = timeEntry.get()
+    details = detailsScrolledText.get(1.0, END)
+    sendConfirmedEventsToFirebase(title, group, location, date, time, details)
+
+def sendConfirmedEventsToFirebase(title, group, location, date, time, details):
+    config = ConfigParser()
+    config.read("config.ini")
+    configuration = {"apiKey" : config['Firebase']['ApiKey'], "authDomain" : config['Firebase']['AuthDomain'],"databaseURL" :
+        config['Firebase']['DatabaseURL'], "storageBucket" : config['Firebase']['StorageBucket'], "serviceAccount" : config['Firebase']['ServiceAccount']}
+    firebase = pyrebase.initialize_app(configuration)
+    db = firebase.database()
+    data = {"xBody": details, "xFrom": group, "xLoCoord1" : "", "xLoCoord2" : "", "xLocation" : location, "xSubject" : title, "xDate":date, "xTime":time}
+    db.push(data)
+
+    # firebase = pyrebase.initialize_app(configuration)
+    # auth = firebase.auth()
+    # user = auth.sign_in_with_email_and_password(config['Firebase']['Email'],  config['Firebase']['Password'])
+    # db = firebase.database()
+    # data = {"xBody": details, "xFrom": group, "xLoCoord1" : "", "xLoCoord2" : "", "xLocation" : location, "xSubject" : title, "xDate":date, "xTime":time}
+    # db.push(data, user['idToken'])
+
+def deleteEmail():
+    return
 
 def doNothing():
     return
@@ -193,8 +232,8 @@ subjectEntry = Entry(leftBox, width=100)
 fromLabel = Label(leftBox, text='From')
 fromEntry = Entry(leftBox, width=100)
 
-timeLabel = Label(leftBox, text='Time')
-timeEntry = Entry(leftBox, width=100)
+timeEmailLabel = Label(leftBox, text='Time')
+timeEmailEntry = Entry(leftBox, width=100)
 
 bodyLabel = Label(leftBox, text='Body')
 bodyScrolledText = ScrolledText(leftBox, height=30, width=100, undo=True)
@@ -210,18 +249,18 @@ groupEntry = Entry(rightBox, width=50)
 locationLabel = Label(rightBox, text='Location')
 locationEntry = Entry(rightBox, width=50)
 
-timeLabel = Label(rightBox, text='Time')
-timeEntry = Entry(rightBox, width=50)
-
 dateLabel = Label(rightBox, text='Date')
 dateEntry = Entry(rightBox, width=50)
 
-descriptionLabel = Label(rightBox, text='Subject')
-descriptionScrolledText = ScrolledText(rightBox, height=20, width=50, undo=True)
+timeLabel = Label(rightBox, text='Time')
+timeEntry = Entry(rightBox, width=50)
+
+detailsLabel = Label(rightBox, text='Details')
+detailsScrolledText = ScrolledText(rightBox, height=20, width=50, undo=True)
 
 emailLabel = Label(rightBox, text='0/0')
 previousButton = Button(rightBox, text="<Prev", width=25, command=lambda: nextEmail(-1))
-confirmButton = Button(rightBox, text="Confirm", width=25,background="red",  command=lambda: doNothing())
+confirmButton = Button(rightBox, text="Confirm", width=25,background="red",  command=lambda: confirmEmail())
 nextButton = Button(rightBox, text="Next>", width=25,  command=lambda: nextEmail(1))
 
 #Adding ui elements
@@ -232,8 +271,8 @@ subjectEntry.grid(row=9, column=1, padx=10, pady=2)
 fromLabel.grid(row=10)
 fromEntry.grid(row=10, column=1, padx=10, pady=2)
 
-timeLabel.grid(row=11)
-timeEntry.grid(row=11, column=1, padx=10, pady=2)
+timeEmailLabel.grid(row=11)
+timeEmailEntry.grid(row=11, column=1, padx=10, pady=2)
 
 bodyLabel.grid(row=12)
 bodyScrolledText.grid(row=12, column=1, padx=10, pady=10)
@@ -249,14 +288,14 @@ groupEntry.grid(row=10, column=1, padx=10, pady=2,columnspan=3)
 locationLabel.grid(row=11)
 locationEntry.grid(row=11, column=1, padx=10, pady=2,columnspan=3)
 
-timeLabel.grid(row=13)
-timeEntry.grid(row=13, column=1, padx=10, pady=2,columnspan=3)
-
 dateLabel.grid(row=12, column=0)
 dateEntry.grid(row=12, column=1, padx=10, pady=2,columnspan=3)
 
-descriptionLabel.grid(row=14)
-descriptionScrolledText.grid(row=14, column=1, padx=10, pady=10,columnspan=3)
+timeLabel.grid(row=13)
+timeEntry.grid(row=13, column=1, padx=10, pady=2,columnspan=3)
+
+detailsLabel.grid(row=14)
+detailsScrolledText.grid(row=14, column=1, padx=10, pady=10, columnspan=3)
 
 emailLabel.grid(row=20, column=2)
 previousButton.grid(column=1, row = 20, pady = 10, sticky=W)
