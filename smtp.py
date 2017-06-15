@@ -12,8 +12,8 @@ from tkinter.scrolledtext import ScrolledText
 from configparser import ConfigParser
 from classes import *
 import pyrebase
-
-
+from imapclient import IMAPClient
+from backports import ssl
 # from pygeocoder import Geocoder
 # import pandas as pd
 # import numpy as np
@@ -40,10 +40,10 @@ def process_mailbox(M):
     """
 
     rv, data = M.search(None, "ALL")
+    res, dat = M.uid("Search", "ALL")
     if rv != 'OK':
         print("No messages found!")
         return
-
     for num in data[0].split():
         rv, data = M.fetch(num, '(RFC822)')
         if rv != 'OK':
@@ -51,6 +51,7 @@ def process_mailbox(M):
             return
 
         msg = email.message_from_bytes(data[0][1])
+
         hdr = email.header.make_header(email.header.decode_header(msg['Subject']))
         # Body (Payload) can be returned from get_payload as either a list of size 2 (1 = plain, 2 = html version(I THINK)) or a string
         try:
@@ -132,8 +133,106 @@ def process_mailbox(M):
             break
 
 
-M = imaplib.IMAP4_SSL('imap.gmail.com')
+def process_mailbox_UID(M):
+    i=0
+    global emailArray
+    emailArray = []
+    """
+    Do something with emails messages in the folder.
+    For the sake of this example, print some headers.
+    """
 
+    rv, data = M.uid("Search", "ALL")
+    if rv != 'OK':
+        print("No messages found!")
+        return
+    for uid in data[0].split():
+        rv, data = M.uid("FETCH", uid, '(RFC822)')
+        if rv != 'OK':
+            print("ERROR getting message", uid)
+            return
+
+        msg = email.message_from_bytes(data[0][1])
+
+        hdr = email.header.make_header(email.header.decode_header(msg['Subject']))
+        # Body (Payload) can be returned from get_payload as either a list of size 2 (1 = plain, 2 = html version(I THINK)) or a string
+        try:
+            body_plain_text = msg.get_payload(0)
+            body = (str(body_plain_text))
+        except:
+            try:
+                body = msg.get_payload()
+            except:
+                print("IDK")
+                continue
+        sender = msg.get_all("From")
+        subject = str(hdr)
+        # print('Message %s: %s' % (num, subject))
+        # print('Raw Date:', msg['Date'])
+
+        # Now convert to local date-time
+        date_tuple = email.utils.parsedate_tz(msg['Date'])
+        if date_tuple:
+            local_date = datetime.datetime.fromtimestamp(
+                email.utils.mktime_tz(date_tuple))
+            # print ("Local Date:",local_date.strftime("%a, %d %b %Y %H:%M:%S"))
+
+        # hdr_bdy = email.header.make_header(email.header.decode_header(msg['Body']))
+    #    full_email = email.message_from_string(data[0][1]) # raw_email)
+
+        # if msg.is_multipart():
+        #     for part in msg.walk():
+        #         ctype = part.get_content_type()
+        #         cdispo = str(part.get('Content-Disposition'))
+        #
+        #         # skip any text/plain (txt) attachments
+        #         if ctype == 'text/plain' and 'attachment' not in cdispo:
+        #             body = part.get_payload(decode=True)  # decode
+        #             break
+        #  #   body = get_text(msg.get_payload(0))
+        # # not multipart - i.e. plain text, no attachments, keeping fingers crossed
+        # else:
+        #     body = msg.get_payload(None, True) # body = bdy.get_payload(decode=True)
+
+
+            ########################## FIND KEYWORDS ###############################
+
+
+        if "free food" in str(body).lower():
+            senderName = ""
+            # uid = msg.get_all('Message-ID')[0]
+            # uid = uid.replace("<","")
+            # uid = uid.replace(">", "")
+            # print(uid)
+            time = local_date.strftime("%a, %d %b %Y %H:%M:%S")
+            senderEmail =  sender[0].split("<")[1][:-1]
+            try:
+                t, d = M.fetch(uid, '(X-GM-LABELS)')
+                print(t)
+                print(d)
+            except:
+                doNothing()
+            try:
+                senderName = sender[0].split('"')[1]
+            except:
+                try:
+                    senderName = sender[0].split("<")[0][:-1]
+                except:
+                    pass
+
+            # print('Message %s: %s' % (num, subject))
+            # print("Local Date:", local_date.strftime("%a, %d %b %Y %H:%M:%S"))
+            # print("Sender = " + sender)
+            # print(body)
+            print(senderName)
+            emailObject = parsedEmail(uid, subject, senderEmail, senderName, time, body)
+            emailArray.append(emailObject)
+
+
+        i = i+1
+        if i == 200:
+            print("Parsing Done")
+            break
 
 def login(M):
     try:
@@ -145,6 +244,7 @@ def login(M):
     return rv, data
 
 def start_process():
+    M = imaplib.IMAP4_SSL('imap.gmail.com')
     rv, data = login(M)
     print(rv, data)
     rv, mailboxes = M.list()
@@ -154,7 +254,7 @@ def start_process():
     rv, data = M.select(EMAIL_FOLDER)
     if rv == 'OK':
         print("Processing mailbox...\n")
-        process_mailbox(M)
+        process_mailbox_UID(M)
         M.close()
     else:
         print("ERROR: Unable to open mailbox ", rv)
@@ -206,7 +306,39 @@ def confirmEmail():
     uid = uidEntry.get()
     details = detailsScrolledText.get(1.0, END)
     sendConfirmedEventsToFirebase(uid, title, group, location, date, time, details)
+    moveEmail(uid)
     deleteEmailFromArray()
+
+def moveEmailTwo():
+    HOST = 'imap.gmail.com'
+    un = config['Main']['Email']
+    pw = config['Main']['Password']
+    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    server = IMAPClient(HOST, use_uid=True, ssl=True, ssl_context=context)
+    server.login(un, pw)
+
+    select_info = server.select_folder(EMAIL_FOLDER)
+    print('%d messages in INBOX' % select_info[b'EXISTS'])
+
+    messages = server.search(['NOT', 'DELETED'])
+    print("%d messages that aren't deleted" % len(messages))
+
+    print()
+    print("Messages:")
+    response = server.fetch(messages, ['FLAGS', 'RFC822.SIZE'])
+    for msgid, data in response.items():
+        print('   ID %d: %d bytes, flags=%s' % (msgid,
+                                                data[b'RFC822.SIZE'],
+                                                data[b'FLAGS']))
+def moveEmail():
+    M = imaplib.IMAP4_SSL('imap.gmail.com')
+    rv, data = login(M)
+    rv, mailboxes = M.list()
+    rv, data = M.select(EMAIL_FOLDER)
+    # uid = uid.encode('utf-8')
+    rv = M.uid("MOVE", "18", 'FalsePos')
+    M.logout()
+
 
 def deleteEmailFromArray():
     emailLabelText = emailLabel.cget("text").split('/')
